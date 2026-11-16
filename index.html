@@ -1,0 +1,385 @@
+
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PHONE STORE</title>
+
+<style>
+*{box-sizing:border-box;margin:0;padding:0;font-family:Arial,sans-serif}
+body{background:#f4f6fa;color:#202938}
+header{background:#101828;color:white;padding:18px 6%;display:flex;align-items:center;justify-content:space-between;gap:15px;flex-wrap:wrap}
+.logo{font-size:26px;font-weight:bold;color:#38bdf8}
+nav{display:flex;gap:20px}
+nav a{color:white;text-decoration:none}
+.search{padding:12px;border:0;border-radius:7px;width:220px}
+.cart-btn{background:#1768a5;color:white;padding:12px 18px;border:0;border-radius:7px;cursor:pointer;font-weight:bold}
+.banner{width:88%;margin:30px auto;background:linear-gradient(120deg,#101828,#1768a5);color:white;padding:55px;border-radius:15px}
+.banner h1{font-size:36px;margin-bottom:15px}
+.banner p{margin-bottom:20px;color:#dbeafe}
+.banner button{padding:12px 25px;border:0;border-radius:7px;background:#38bdf8;cursor:pointer;font-weight:bold}
+.container{width:88%;margin:35px auto}
+.section-title{margin-bottom:22px;font-size:25px}
+.categories{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:35px}
+.categories button{padding:12px 25px;background:white;border:1px solid #ddd;border-radius:8px;cursor:pointer}
+.categories button:hover{background:#1768a5;color:white}
+.products{display:grid;grid-template-columns:repeat(4,1fr);gap:20px}
+.product{background:white;padding:15px;border-radius:12px;box-shadow:0 2px 10px #ddd;text-align:center;transition:.2s}
+.product:hover{transform:translateY(-5px)}
+.product img{width:100%;height:190px;object-fit:contain;background:#f8fafc;border-radius:8px}
+.product h3{margin:14px 0 10px;font-size:17px}
+.brand{font-size:12px;color:#777;margin-bottom:8px}
+.price{color:#e53935;font-size:19px;font-weight:bold;margin:12px 0}
+.product button{background:#1768a5;color:white;padding:11px 15px;border:0;border-radius:7px;cursor:pointer;width:100%}
+.product button:hover{background:#101828}
+.add-section{background:white;padding:25px;border-radius:12px;margin-top:45px;box-shadow:0 2px 10px #ddd}
+.add-section input{padding:12px;border:1px solid #ccc;border-radius:6px;width:100%;margin:7px 0}
+.add-section button{background:#16834a;color:white;padding:12px 20px;border:0;border-radius:7px;cursor:pointer;margin-top:8px}
+footer{background:#101828;color:white;text-align:center;padding:30px;margin-top:50px}
+
+/* Giỏ hàng */
+.overlay{display:none;position:fixed;inset:0;background:#0008;z-index:10}
+.cart-panel{position:fixed;right:0;top:0;width:420px;max-width:100%;height:100vh;background:white;z-index:11;padding:25px;overflow-y:auto;transform:translateX(100%);transition:.3s}
+.cart-panel.active{transform:translateX(0)}
+.overlay.active{display:block}
+.cart-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:25px}
+.close{border:0;background:#eee;padding:9px 13px;border-radius:6px;cursor:pointer}
+.cart-item{display:flex;gap:12px;padding:15px 0;border-bottom:1px solid #ddd;align-items:center}
+.cart-item img{width:75px;height:75px;object-fit:contain;background:#f4f6fa}
+.cart-info{flex:1}
+.cart-info h4{font-size:14px;margin-bottom:8px}
+.cart-price{color:#e53935;font-weight:bold}
+.quantity{display:flex;gap:10px;align-items:center;margin-top:8px}
+.quantity button{padding:4px 9px;cursor:pointer;border:1px solid #ddd;background:white}
+.remove{color:red;border:0;background:none;cursor:pointer}
+.total{margin-top:25px;font-size:20px;font-weight:bold;display:flex;justify-content:space-between}
+.checkout{width:100%;padding:14px;background:#16834a;color:white;border:0;border-radius:7px;margin-top:20px;cursor:pointer;font-weight:bold}
+.empty{text-align:center;color:#777;margin:50px 0}
+@media(max-width:900px){.products{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:550px){.products{grid-template-columns:1fr}.banner{padding:30px}.banner h1{font-size:26px}}
+</style>
+</head>
+
+<body>
+
+<header>
+    <div class="logo">PHONE STORE</div>
+    <nav>
+        <a href="#">Trang chủ</a>
+        <a href="#products">Sản phẩm</a>
+        <a href="#add">Thêm sản phẩm</a>
+    </nav>
+    <input class="search" id="search" placeholder="Tìm điện thoại...">
+    <button class="cart-btn" onclick="openCart()">
+        🛒 Giỏ hàng (<span id="cartCount">0</span>)
+    </button>
+</header>
+
+<section class="banner">
+    <h1>THẾ GIỚI ĐIỆN THOẠI</h1>
+    <p>Khám phá smartphone mới nhất – Giá tốt mỗi ngày.</p>
+    <button onclick="document.getElementById('products').scrollIntoView()">
+        MUA SẮM NGAY
+    </button>
+</section>
+
+<main class="container">
+
+<h2 class="section-title">Danh mục sản phẩm</h2>
+<div class="categories">
+    <button onclick="filterBrand('all')">Tất cả</button>
+    <button onclick="filterBrand('Apple')">Apple</button>
+    <button onclick="filterBrand('Samsung')">Samsung</button>
+    <button onclick="filterBrand('Xiaomi')">Xiaomi</button>
+    <button onclick="filterBrand('OPPO')">OPPO</button>
+</div>
+
+<h2 class="section-title" id="products">Điện thoại nổi bật</h2>
+<div class="products" id="productList"></div>
+
+<section class="add-section" id="add">
+    <h2>➕ Thêm sản phẩm mới</h2>
+    <p style="color:#777;margin:10px 0">Nhập thông tin điện thoại muốn đăng bán</p>
+
+    <input id="newName" placeholder="Tên điện thoại">
+    <input id="newBrand" placeholder="Thương hiệu (Apple, Samsung...)">
+    <input id="newPrice" type="number" placeholder="Giá bán (VNĐ)">
+    <input id="newImage" placeholder="Đường dẫn hình ảnh (URL)">
+
+    <button onclick="addProduct()">Thêm sản phẩm</button>
+</section>
+
+</main>
+
+<div class="overlay" id="overlay" onclick="closeCart()"></div>
+
+<aside class="cart-panel" id="cartPanel">
+    <div class="cart-header">
+        <h2>🛒 Giỏ hàng</h2>
+        <button class="close" onclick="closeCart()">✕ Đóng</button>
+    </div>
+
+    <div id="cartItems"></div>
+
+    <div class="total">
+        <span>Tổng tiền:</span>
+        <span id="totalPrice">0đ</span>
+    </div>
+
+    <button class="checkout" onclick="checkout()">TIẾN HÀNH ĐẶT HÀNG</button>
+</aside>
+
+<footer>
+    <h3>PHONE STORE</h3>
+    <p>Website bán điện thoại trực tuyến</p>
+    <p>Hotline: 1900 0000</p>
+    <p>© 2026 PHONE STORE</p>
+</footer>
+
+<script>
+// Danh sách điện thoại
+const initialProducts = [
+{
+ id:1,name:"iPhone 16 Pro Max",brand:"Apple",price:30990000,
+ image:"https://images.unsplash.com/photo-1592750475338-74b7b21085ab?w=600"
+},
+{
+ id:2,name:"Samsung Galaxy S25 Ultra",brand:"Samsung",price:29990000,
+ image:"https://images.unsplash.com/photo-1610945265064-0e34e5519bbf?w=600"
+},
+{
+ id:3,name:"Xiaomi 15 Ultra",brand:"Xiaomi",price:24990000,
+ image:"https://images.unsplash.com/photo-1598327105666-5b89351aff97?w=600"
+},
+{
+ id:4,name:"OPPO Find X8 Pro",brand:"OPPO",price:22990000,
+ image:"https://images.unsplash.com/photo-1603891128711-11b4b03bb138?w=600"
+},
+{
+ id:5,name:"iPhone 15 Pro",brand:"Apple",price:24990000,
+ image:"https://images.unsplash.com/photo-1592899677977-9c10ca588bbd?w=600"
+},
+{
+ id:6,name:"Samsung Galaxy Z Flip",brand:"Samsung",price:19990000,
+ image:"https://images.unsplash.com/photo-1605236453806-6ff36851218e?w=600"
+},
+{
+ id:7,name:"Xiaomi Redmi Note",brand:"Xiaomi",price:6990000,
+ image:"https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?w=600"
+},
+{
+ id:8,name:"OPPO Reno Series",brand:"OPPO",price:11990000,
+ image:"https://images.unsplash.com/photo-1598327105666-5b89351aff97?w=600"
+}
+];
+
+let products = JSON.parse(localStorage.getItem("products")) || initialProducts;
+let cart = JSON.parse(localStorage.getItem("cart")) || [];
+let currentBrand = "all";
+
+function money(value){
+ return Number(value).toLocaleString("vi-VN")+"đ";
+}
+
+function saveData(){
+ localStorage.setItem("products",JSON.stringify(products));
+ localStorage.setItem("cart",JSON.stringify(cart));
+}
+
+function renderProducts(){
+ const list=document.getElementById("productList");
+ const keyword=document.getElementById("search").value.toLowerCase();
+
+ list.innerHTML="";
+
+ const filtered=products.filter(p=>
+ (currentBrand==="all" || p.brand.toLowerCase()===currentBrand.toLowerCase()) &&
+ p.name.toLowerCase().includes(keyword)
+ );
+
+ filtered.forEach(p=>{
+ const card=document.createElement("div");
+ card.className="product";
+
+ const img=document.createElement("img");
+ img.src=p.image;
+ img.alt=p.name;
+ img.onerror=function(){this.src="https://placehold.co/400x300?text=Phone";};
+
+ const brand=document.createElement("div");
+ brand.className="brand";
+ brand.textContent=p.brand;
+
+ const name=document.createElement("h3");
+ name.textContent=p.name;
+
+ const price=document.createElement("div");
+ price.className="price";
+ price.textContent=money(p.price);
+
+ const btn=document.createElement("button");
+ btn.textContent="THÊM VÀO GIỎ";
+ btn.onclick=()=>addCart(p.id);
+
+ card.append(img,brand,name,price,btn);
+ list.appendChild(card);
+ });
+}
+
+function filterBrand(brand){
+ currentBrand=brand;
+ renderProducts();
+}
+
+document.getElementById("search").addEventListener("input",renderProducts);
+
+function addCart(id){
+ const item=cart.find(x=>x.id===id);
+ if(item){item.quantity++;}
+ else{cart.push({id:id,quantity:1});}
+ saveData();
+ renderCart();
+ alert("Đã thêm sản phẩm vào giỏ hàng!");
+}
+
+function openCart(){
+ document.getElementById("overlay").classList.add("active");
+ document.getElementById("cartPanel").classList.add("active");
+ renderCart();
+}
+
+function closeCart(){
+ document.getElementById("overlay").classList.remove("active");
+ document.getElementById("cartPanel").classList.remove("active");
+}
+
+function renderCart(){
+ const box=document.getElementById("cartItems");
+ box.innerHTML="";
+ let total=0;
+ let count=0;
+
+ if(cart.length===0){
+ box.innerHTML='<div class="empty">Giỏ hàng đang trống</div>';
+ }
+
+ cart.forEach(item=>{
+ const p=products.find(x=>x.id===item.id);
+ if(!p)return;
+
+ total+=p.price*item.quantity;
+ count+=item.quantity;
+
+ const row=document.createElement("div");
+ row.className="cart-item";
+
+ const img=document.createElement("img");
+ img.src=p.image;
+ img.onerror=function(){this.src="https://placehold.co/100x100?text=Phone";};
+
+ const info=document.createElement("div");
+ info.className="cart-info";
+
+ const name=document.createElement("h4");
+ name.textContent=p.name;
+
+ const price=document.createElement("div");
+ price.className="cart-price";
+ price.textContent=money(p.price);
+
+ const controls=document.createElement("div");
+ controls.className="quantity";
+
+ const minus=document.createElement("button");
+ minus.textContent="-";
+ minus.onclick=()=>changeQty(item.id,-1);
+
+ const qty=document.createElement("span");
+ qty.textContent=item.quantity;
+
+ const plus=document.createElement("button");
+ plus.textContent="+";
+ plus.onclick=()=>changeQty(item.id,1);
+
+ const remove=document.createElement("button");
+ remove.className="remove";
+ remove.textContent="Xóa";
+ remove.onclick=()=>removeCart(item.id);
+
+ controls.append(minus,qty,plus,remove);
+ info.append(name,price,controls);
+ row.append(img,info);
+ box.appendChild(row);
+ });
+
+ document.getElementById("totalPrice").textContent=money(total);
+ document.getElementById("cartCount").textContent=count;
+}
+
+function changeQty(id,amount){
+ const item=cart.find(x=>x.id===id);
+ if(!item)return;
+ item.quantity+=amount;
+ if(item.quantity<=0)removeCart(id);
+ else{saveData();renderCart();}
+}
+
+function removeCart(id){
+ cart=cart.filter(x=>x.id!==id);
+ saveData();
+ renderCart();
+}
+
+// Thêm sản phẩm mới
+function addProduct(){
+ const name=document.getElementById("newName").value.trim();
+ const brand=document.getElementById("newBrand").value.trim();
+ const price=Number(document.getElementById("newPrice").value);
+ const image=document.getElementById("newImage").value.trim();
+
+ if(!name||!brand||!price||price<=0){
+ alert("Vui lòng nhập đầy đủ tên, thương hiệu và giá hợp lệ!");
+ return;
+ }
+
+ if(image && !/^https?:\/\//i.test(image)){
+ alert("Đường dẫn hình ảnh phải bắt đầu bằng http:// hoặc https://");
+ return;
+ }
+
+ products.push({
+ id:Date.now(),
+ name:name,
+ brand:brand,
+ price:price,
+ image:image || "https://placehold.co/400x300?text=Phone"
+ });
+
+ saveData();
+ renderProducts();
+
+ document.getElementById("newName").value="";
+ document.getElementById("newBrand").value="";
+ document.getElementById("newPrice").value="";
+ document.getElementById("newImage").value="";
+
+ alert("Đã thêm sản phẩm thành công!");
+}
+
+// Đặt hàng thử nghiệm
+function checkout(){
+ if(cart.length===0){
+ alert("Giỏ hàng đang trống!");
+ return;
+ }
+
+ alert("Đã tiếp nhận giỏ hàng! Chức năng đặt hàng sẽ được hoàn thiện ở bước tiếp theo.");
+}
+
+renderProducts();
+renderCart();
+</script>
+
+</body>
+</html>
